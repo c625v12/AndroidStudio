@@ -40,17 +40,29 @@ import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.mbientlab.metawear.Data;
 import com.mbientlab.metawear.MetaWearBoard;
+import com.mbientlab.metawear.Route;
+import com.mbientlab.metawear.Subscriber;
 import com.mbientlab.metawear.android.BtleService;
+import com.mbientlab.metawear.builder.RouteBuilder;
+import com.mbientlab.metawear.builder.RouteComponent;
+import com.mbientlab.metawear.data.Acceleration;
+import com.mbientlab.metawear.module.Accelerometer;
+
+import bolts.Continuation;
+import bolts.Task;
 
 /**
  * A placeholder fragment containing a simple view.
  */
 public class DeviceSetupActivityFragment extends Fragment implements ServiceConnection {
+    private Accelerometer accelerometer;
     public interface FragmentSettings {
         BluetoothDevice getBtDevice();
     }
@@ -91,11 +103,34 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
         metawear = ((BtleService.LocalBinder) service).getMetaWearBoard(settings.getBtDevice());
+        accelerometer = metawear.getModule(Accelerometer.class);
+        accelerometer.configure()
+                .odr(25f).commit();
     }
 
     @Override
     public void onServiceDisconnected(ComponentName name) {
 
+    }
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        view.findViewById(R.id.acc_start).setOnClickListener(v ->
+                accelerometer.acceleration().addRouteAsync(source ->
+                source.stream((Subscriber) (data, env) ->
+                        Log.i("MainActivity", data.value(Acceleration.class).toString()))).
+                continueWith((Continuation<Route, Void>) task ->
+        {
+            accelerometer.acceleration().start();
+            accelerometer.start();
+            return null;
+        }));
+        view.findViewById(R.id.acc_stop).setOnClickListener(v -> {
+            accelerometer.stop();
+            accelerometer.acceleration().stop();
+            metawear.tearDown();
+        });
     }
 
     /**

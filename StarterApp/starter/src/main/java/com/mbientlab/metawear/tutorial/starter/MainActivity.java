@@ -13,6 +13,7 @@ import android.os.Bundle;
 import com.mbientlab.bletoolbox.scanner.BleScannerFragment;
 import com.mbientlab.metawear.MetaWearBoard;
 import com.mbientlab.metawear.android.BtleService;
+import com.mbientlab.metawear.module.Accelerometer;
 
 import java.util.UUID;
 
@@ -24,6 +25,7 @@ public class MainActivity extends AppCompatActivity implements BleScannerFragmen
 
     private BtleService.LocalBinder serviceBinder;
     private MetaWearBoard metawear;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,6 +92,8 @@ public class MainActivity extends AppCompatActivity implements BleScannerFragmen
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
         serviceBinder = (BtleService.LocalBinder) service;
+
+
     }
 
     @Override
