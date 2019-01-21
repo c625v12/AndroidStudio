@@ -35,4 +35,6 @@
     <string name="title_reconnect_attempt">Reconnecting</string>
     <string name="message_wait">Please wait</string>
     <string name="action_disconnect">Disconnect</string>
+    <string name="start">Start</string>
+    <string name="stop">Stop</string>
 </resources>

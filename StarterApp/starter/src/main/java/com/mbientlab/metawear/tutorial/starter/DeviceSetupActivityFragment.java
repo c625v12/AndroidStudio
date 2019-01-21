@@ -38,6 +38,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.util.Log;
@@ -113,15 +114,14 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
 
     }
     @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
         view.findViewById(R.id.acc_start).setOnClickListener(v ->
                 accelerometer.acceleration().addRouteAsync(source ->
-                source.stream((Subscriber) (data, env) ->
-                        Log.i("MainActivity", data.value(Acceleration.class).toString()))).
-                continueWith((Continuation<Route, Void>) task ->
-        {
+                        source.stream((Subscriber) (data, env) ->
+                                Log.i("Accel", data.value(Acceleration.class).toString()))).continueWith((Continuation<Route, Void>)
+                        task -> {
             accelerometer.acceleration().start();
             accelerometer.start();
             return null;
