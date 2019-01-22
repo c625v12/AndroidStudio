@@ -57,6 +57,7 @@ import com.mbientlab.metawear.builder.filter.ThresholdOutput;
 import com.mbientlab.metawear.builder.function.Function1;
 import com.mbientlab.metawear.data.Acceleration;
 import com.mbientlab.metawear.module.Accelerometer;
+import com.mbientlab.metawear.module.Led;
 
 import bolts.Continuation;
 import bolts.Task;
@@ -66,6 +67,7 @@ import bolts.Task;
  */
 public class DeviceSetupActivityFragment extends Fragment implements ServiceConnection {
     private Accelerometer accelerometer;
+    Led led;
     public interface FragmentSettings {
         BluetoothDevice getBtDevice();
     }
@@ -131,7 +133,9 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
                                 .multicast().to().filter(Comparison.EQ, -1).stream(new Subscriber() {
                             @Override
                             public void apply(Data data, Object... env) {
+
                                 Log.i("Accel", "in free fall");
+
                             }
                         })
                                 .to().filter(Comparison.EQ, 1).stream(new Subscriber() {
