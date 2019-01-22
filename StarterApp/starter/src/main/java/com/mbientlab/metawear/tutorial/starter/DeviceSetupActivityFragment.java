@@ -58,7 +58,9 @@ import com.mbientlab.metawear.builder.filter.ThresholdOutput;
 import com.mbientlab.metawear.builder.function.Function1;
 import com.mbientlab.metawear.data.Acceleration;
 import com.mbientlab.metawear.module.Accelerometer;
+import com.mbientlab.metawear.module.BarometerBosch;
 import com.mbientlab.metawear.module.Led;
+import com.mbientlab.metawear.module.Temperature;
 
 import java.util.Objects;
 
@@ -70,6 +72,7 @@ import bolts.Task;
  */
 public class DeviceSetupActivityFragment extends Fragment implements ServiceConnection {
     private Accelerometer accelerometer;
+
     Led led;
     public interface FragmentSettings {
         BluetoothDevice getBtDevice();
@@ -77,6 +80,8 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
 
     private MetaWearBoard metawear = null;
     private FragmentSettings settings;
+    final Temperature temperature = metawear.getModule(Temperature.class);
+    final Temperature.Sensor tempSensor = temperature.findSensors(Temperature.SensorType.PRESET_THERMISTOR)[0];
 
     public DeviceSetupActivityFragment() {
     }
@@ -114,6 +119,9 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
         accelerometer = metawear.getModule(Accelerometer.class);
         accelerometer.configure()
                 .odr(60f).commit();
+        ((Temperature.ExternalThermistor) temperature.findSensors(Temperature.SensorType.EXT_THERMISTOR)[0])
+                .configure((byte) 0, (byte) 1, false);
+
 
     }
 
@@ -141,6 +149,28 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
                 return null;
             });
         });
+
+        view.findViewById(R.id.temp_start).setOnClickListener(v -> {
+
+            ((Temperature.ExternalThermistor) temperature.findSensors(Temperature.SensorType.EXT_THERMISTOR)[0])
+                    .configure((byte) 0, (byte) 1, false);
+
+            metawear.getModule(BarometerBosch.class).start();
+            temperature.findSensors(Temperature.SensorType.BOSCH_ENV)[0].read();
+
+
+            tempSensor.addRouteAsync(source -> source.stream((Subscriber) (data, env) ->
+            {
+              Log.i("MainActivity", "Temperature (C) = " + data.value(Float.class));
+            }))
+                    .continueWith((Continuation<Route, Void>) task -> {
+                tempSensor.read();
+                return null;
+            });
+            Log.i("Temp", "start");
+            temperature.findSensors(tempSensor.type());
+        });
+
         view.findViewById(R.id.acc_stop).setOnClickListener(v -> {
             Log.i("Accel", "stop");
             accelerometer.stop();
