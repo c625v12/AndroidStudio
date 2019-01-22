@@ -62,6 +62,7 @@ import com.mbientlab.metawear.module.BarometerBosch;
 import com.mbientlab.metawear.module.Led;
 import com.mbientlab.metawear.module.Temperature;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 import bolts.Continuation;
@@ -156,9 +157,9 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
                     .configure((byte) 0, (byte) 1, false);
 
             Log.i("Device", "Temp start");
-            temperature.findSensors(tempSensor.type());
+            System.out.println(Arrays.toString(temperature.findSensors(tempSensor.type())));
 
-            metawear.getModule(BarometerBosch.class).start();
+            /*metawear.getModule(BarometerBosch.class).start();
             temperature.findSensors(Temperature.SensorType.BOSCH_ENV)[0].read();
 
 
@@ -169,7 +170,7 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
                     .continueWith((Continuation<Route, Void>) task -> {
                 tempSensor.read();
                 return null;
-            });
+            });*/
 
         });
 
