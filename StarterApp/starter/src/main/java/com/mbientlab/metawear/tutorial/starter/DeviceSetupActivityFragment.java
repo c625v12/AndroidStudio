@@ -149,6 +149,7 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
                 accelerometer.start();
                 return null;
             });
+
         });
 
         view.findViewById(R.id.temp_start).setOnClickListener(v -> {
