@@ -38,6 +38,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.util.Log;
@@ -58,6 +59,8 @@ import com.mbientlab.metawear.builder.function.Function1;
 import com.mbientlab.metawear.data.Acceleration;
 import com.mbientlab.metawear.module.Accelerometer;
 import com.mbientlab.metawear.module.Led;
+
+import java.util.Objects;
 
 import bolts.Continuation;
 import bolts.Task;
@@ -96,11 +99,11 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
         super.onDestroy();
 
         ///< Unbind the service when the activity is destroyed
-        getActivity().getApplicationContext().unbindService(this);
+        Objects.requireNonNull(getActivity()).getApplicationContext().unbindService(this);
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         setRetainInstance(true);
         return inflater.inflate(R.layout.fragment_device_setup, container, false);
     }
@@ -122,45 +125,27 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        view.findViewById(R.id.acc_start).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.i("Accel", "start");
-                accelerometer.acceleration().addRouteAsync(new RouteBuilder() {
-                    @Override
-                    public void configure(RouteComponent source) {
-                        source.map(Function1.RSS).average((byte) 4).filter(ThresholdOutput.BINARY, 0.5f)
-                                .multicast().to().filter(Comparison.EQ, -1).stream(new Subscriber() {
-                            @Override
-                            public void apply(Data data, Object... env) {
+        view.findViewById(R.id.acc_start).setOnClickListener(v -> {
+            Log.i("Accel", "start");
+            accelerometer.acceleration().addRouteAsync(source ->
+                    source.map(Function1.RSS).average((byte) 4).filter(ThresholdOutput.BINARY, 0.5f)
+                    .multicast().to().filter(Comparison.EQ, -1).stream((Subscriber) (data, env) ->
 
-                                Log.i("Accel", "in free fall");
+                            Log.i("Accel", "in free fall"))
+                    .to().filter(Comparison.EQ, 1).stream((Subscriber) (data, env) ->
 
-                            }
-                        })
-                                .to().filter(Comparison.EQ, 1).stream(new Subscriber() {
-                            @Override
-                            public void apply(Data data, Object... env) {
-                                Log.i("Accel", "no free fall");
-                            }
-                        })
-                                .end();
-                    }
-                }).continueWith((Continuation<Route, Void>) task -> {
-                    accelerometer.acceleration().start();
-                    accelerometer.start();
-                    return null;
-                });
-            }
+                            Log.i("Accel", "no free fall"))
+                    .end()).continueWith((Continuation<Route, Void>) task -> {
+                accelerometer.acceleration().start();
+                accelerometer.start();
+                return null;
+            });
         });
-        view.findViewById(R.id.acc_stop).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.i("Accel", "stop");
-                accelerometer.stop();
-                accelerometer.acceleration().stop();
-                metawear.tearDown();
-            }
+        view.findViewById(R.id.acc_stop).setOnClickListener(v -> {
+            Log.i("Accel", "stop");
+            accelerometer.stop();
+            accelerometer.acceleration().stop();
+            metawear.tearDown();
         });
 
     }
