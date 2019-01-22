@@ -82,9 +82,6 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
 
     private MetaWearBoard metawear = null;
     private FragmentSettings settings;
-    final Temperature temperature = metawear.getModule(Temperature.class);
-    final Temperature.Sensor tempSensor = temperature.findSensors(Temperature.SensorType.PRESET_THERMISTOR)[0];
-
 
 
     public DeviceSetupActivityFragment() {
@@ -123,8 +120,8 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
         accelerometer = metawear.getModule(Accelerometer.class);
         accelerometer.configure()
                 .odr(60f).commit();
-        ((Temperature.ExternalThermistor) temperature.findSensors(Temperature.SensorType.EXT_THERMISTOR)[0])
-                .configure((byte) 0, (byte) 1, false);
+
+
 
 
     }
@@ -155,16 +152,20 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
         });
 
         view.findViewById(R.id.temp_start).setOnClickListener(v -> {
+            final Temperature temperature = metawear.getModule(Temperature.class);
+            final Temperature.Sensor tempSensor = temperature.findSensors(Temperature.SensorType.PRESET_THERMISTOR)[0];
 
             ((Temperature.ExternalThermistor) temperature.findSensors(Temperature.SensorType.EXT_THERMISTOR)[0])
                     .configure((byte) 0, (byte) 1, false);
+
+
 
             Log.i("Device", "Temp start");
             String deviceType = Arrays.toString(temperature.findSensors(tempSensor.type()));
             TextView textView = view.findViewById(R.id.textView);
             textView.setText(deviceType);
 
-            /*metawear.getModule(BarometerBosch.class).start();
+            metawear.getModule(BarometerBosch.class).start();
             temperature.findSensors(Temperature.SensorType.BOSCH_ENV)[0].read();
 
 
@@ -175,7 +176,7 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
                     .continueWith((Continuation<Route, Void>) task -> {
                 tempSensor.read();
                 return null;
-            });*/
+            });
 
         });
 
