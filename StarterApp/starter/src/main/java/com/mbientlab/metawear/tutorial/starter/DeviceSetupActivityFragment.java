@@ -45,6 +45,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.mbientlab.metawear.Data;
 import com.mbientlab.metawear.MetaWearBoard;
@@ -83,6 +84,8 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
     private FragmentSettings settings;
     final Temperature temperature = metawear.getModule(Temperature.class);
     final Temperature.Sensor tempSensor = temperature.findSensors(Temperature.SensorType.PRESET_THERMISTOR)[0];
+
+
 
     public DeviceSetupActivityFragment() {
     }
@@ -157,7 +160,9 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
                     .configure((byte) 0, (byte) 1, false);
 
             Log.i("Device", "Temp start");
-            System.out.println(Arrays.toString(temperature.findSensors(tempSensor.type())));
+            String deviceType = Arrays.toString(temperature.findSensors(tempSensor.type()));
+            TextView textView = view.findViewById(R.id.textView);
+            textView.setText(deviceType);
 
             /*metawear.getModule(BarometerBosch.class).start();
             temperature.findSensors(Temperature.SensorType.BOSCH_ENV)[0].read();
