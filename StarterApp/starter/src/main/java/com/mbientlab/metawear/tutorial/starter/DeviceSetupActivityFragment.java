@@ -134,15 +134,15 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
         super.onViewCreated(view, savedInstanceState);
 
         view.findViewById(R.id.acc_start).setOnClickListener(v -> {
-            Log.i("Accel", "start");
+            Log.i("Device", "Accel start");
             accelerometer.acceleration().addRouteAsync(source ->
                     source.map(Function1.RSS).average((byte) 4).filter(ThresholdOutput.BINARY, 0.5f)
                     .multicast().to().filter(Comparison.EQ, -1).stream((Subscriber) (data, env) ->
 
-                            Log.i("Accel", "in free fall"))
+                            Log.i("Device", "in free fall"))
                     .to().filter(Comparison.EQ, 1).stream((Subscriber) (data, env) ->
 
-                            Log.i("Accel", "no free fall"))
+                            Log.i("Device", "no free fall"))
                     .end()).continueWith((Continuation<Route, Void>) task -> {
                 accelerometer.acceleration().start();
                 accelerometer.start();
@@ -155,24 +155,26 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
             ((Temperature.ExternalThermistor) temperature.findSensors(Temperature.SensorType.EXT_THERMISTOR)[0])
                     .configure((byte) 0, (byte) 1, false);
 
+            Log.i("Device", "Temp start");
+            temperature.findSensors(tempSensor.type());
+
             metawear.getModule(BarometerBosch.class).start();
             temperature.findSensors(Temperature.SensorType.BOSCH_ENV)[0].read();
 
 
             tempSensor.addRouteAsync(source -> source.stream((Subscriber) (data, env) ->
             {
-              Log.i("MainActivity", "Temperature (C) = " + data.value(Float.class));
+              Log.i("Device", "Temperature (C) = " + data.value(Float.class));
             }))
                     .continueWith((Continuation<Route, Void>) task -> {
                 tempSensor.read();
                 return null;
             });
-            Log.i("Temp", "start");
-            temperature.findSensors(tempSensor.type());
+
         });
 
         view.findViewById(R.id.acc_stop).setOnClickListener(v -> {
-            Log.i("Accel", "stop");
+            Log.i("Device", "stop");
             accelerometer.stop();
             accelerometer.acceleration().stop();
             metawear.tearDown();
